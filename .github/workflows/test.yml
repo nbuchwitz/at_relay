@@ -1,0 +1,40 @@
+name: pytest-coverage-comment
+on:
+  pull_request:
+    branches:
+      - "*"
+
+permissions: write-all
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: "${{ matrix.python-version }}"
+
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip wheel
+          pip install '.[test]'
+
+      - name: Build coverage file
+        run: |
+          python3 -m pytest -v --junitxml=pytest.xml --cov=src --cov-report=term-missing:skip-covered --cov-report xml:coverage.xml --cov=app tests/
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          token: "{{ secrets.GITHUB_TOKEN }}"
+          pytest-xml-coverage-path: ./coverage.xml
+          junitxml-path: ./pytest.xml

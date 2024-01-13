@@ -194,7 +194,7 @@ class RelayBoard:
             self._serial.write((command.upper() + "\r\n").encode())
             response = self._serial.readline().decode().strip()
         except serial.serialutil.SerialException:
-            # TODO: error handling
+            # TODO: error handling if serial connection is gone
             response = ""
 
         if check and not response.startswith("OK+"):
